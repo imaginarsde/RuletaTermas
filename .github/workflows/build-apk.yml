@@ -13,11 +13,14 @@ jobs:
 
       - name: Prepare offline web assets
         run: |
+          set -euxo pipefail
           rm -rf app/src/main/assets
           mkdir -p app/src/main/assets
-          unzip -o web_bundle.zip -d app/src/main/assets
-          test -f app/src/main/assets/index.html
-          test -f app/src/main/assets/fondoapp.webp
+          cp web_assets/index.html app/src/main/assets/index.html
+          cat web_assets/bg.part*.b64 | tr -d '\n\r' | base64 -d > app/src/main/assets/fondoapp.webp
+          test -s app/src/main/assets/index.html
+          test -s app/src/main/assets/fondoapp.webp
+          echo "3dce94b5bf1d83afdb7f4c3c3896f32195ccb18970046db15cc514c5025572f0  app/src/main/assets/fondoapp.webp" | sha256sum -c -
 
       - uses: actions/setup-java@v4
         with:
@@ -33,6 +36,12 @@ jobs:
 
       - name: Rename APK
         run: cp app/build/outputs/apk/debug/app-debug.apk ruleta.apk
+
+      - name: Validate APK assets
+        run: |
+          unzip -l ruleta.apk | grep 'assets/index.html'
+          unzip -l ruleta.apk | grep 'assets/fondoapp.webp'
+          unzip -t ruleta.apk
 
       - uses: actions/upload-artifact@v4
         with:

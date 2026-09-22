@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Girá y Ganá - Termas de Río Hondo</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#008ea0;font-family:Arial,Helvetica,sans-serif}
+body{position:fixed;left:0;top:0;right:0;bottom:0}
+#stage{position:absolute;width:1080px;height:1920px;left:50%;top:50%;transform-origin:50% 50%;background-image:url('fondoapp.webp');background-size:100% 100%;background-position:center;background-repeat:no-repeat;overflow:hidden}
+#wheelZone{position:absolute;left:75px;top:690px;width:930px;height:930px}
+#wheelShell{position:absolute;left:20px;top:20px;width:890px;height:890px;border-radius:50%;background:radial-gradient(circle at 35% 20%,#ffe18a 0%,#f6c24e 8%,#be7f29 49%,#85501a 67%,#d7a94e 84%,#764112 100%);box-shadow:0 18px 28px rgba(47,91,94,.22),inset 0 0 0 6px rgba(255,225,132,.58)}
+#wheel{position:absolute;left:25px;top:25px;width:840px;height:840px;border-radius:50%}
+#lights{position:absolute;left:0;top:0;width:890px;height:890px;pointer-events:none}
+.light{position:absolute;width:24px;height:24px;border-radius:50%;background:#fffef1;box-shadow:0 0 10px 3px #fff1a0,0 0 18px 6px rgba(255,197,47,.48)}
+#pointer{position:absolute;left:420px;top:-8px;width:90px;height:126px;z-index:6;transform:translateX(-50%)}
+#pointer:before{content:"";position:absolute;left:6px;top:0;width:78px;height:78px;border-radius:50%;background:linear-gradient(145deg,#fff6b7,#ffc329 55%,#ee9d00);border:6px solid #fff0a8;box-shadow:inset 0 0 0 5px #e3a11e}
+#pointer:after{content:"";position:absolute;left:14px;top:54px;border-left:31px solid transparent;border-right:31px solid transparent;border-top:60px solid #ffc120;filter:drop-shadow(0 3px 0 #d48a00)}
+#spinBtn{position:absolute;left:465px;top:465px;width:255px;height:255px;margin-left:-127.5px;margin-top:-127.5px;border-radius:50%;z-index:7;border:10px solid #f7d37b;background:radial-gradient(circle at 35% 25%,#35ebf2 0%,#12cad5 28%,#08b6c4 57%,#007e98 100%);box-shadow:0 0 0 8px #7c4b13,0 15px 24px rgba(0,0,0,.27),inset 0 9px 13px rgba(255,255,255,.42),inset 0 -16px 18px rgba(0,60,77,.25);color:#fff;font-weight:900;font-size:54px;line-height:1;text-align:center;padding-top:69px;text-shadow:0 5px 0 rgba(0,85,103,.28)}
+#spinBtn .arrow{display:block;font-size:53px;line-height:.72;margin-top:12px;font-weight:bold}
+#spinBtn.pulse{animation:pulse .9s ease-in-out infinite alternate}
+@keyframes pulse{from{filter:brightness(1);transform:scale(1)}to{filter:brightness(1.14);transform:scale(1.035)}}
+#result{display:none;position:absolute;left:0;top:0;width:1080px;height:1920px;background:rgba(0,55,68,.64);z-index:20}
+#card{position:absolute;left:130px;top:500px;width:820px;min-height:690px;background:#fff;border-radius:64px;border:9px solid #fff;box-shadow:0 30px 70px rgba(0,40,50,.38);padding:70px 60px 55px;text-align:center;color:#2d4148}
+#resultTitle{font-size:72px;font-weight:900;line-height:1;margin:80px 0 30px;color:#ff6714}
+#resultText{font-size:39px;font-weight:800;line-height:1.14;min-height:150px;display:flex;align-items:center;justify-content:center}
+#againBtn{display:inline-block;margin-top:32px;width:560px;height:108px;border:5px solid #9cf3f4;border-radius:60px;background:linear-gradient(#14bfc9,#0095a8);box-shadow:0 8px 0 #006d7d;color:#fff;font-size:34px;font-weight:900;line-height:98px}
+#resultMark{position:absolute;left:0;top:0;width:100%;height:190px;border-radius:56px 56px 50% 50%;background:linear-gradient(110deg,#15c0ce,#009db0 60%,#58d8e1)}
+#resultKicker{position:relative;z-index:2;font-size:30px;font-weight:900;letter-spacing:4px;color:#fff;margin-top:-13px}
+#confetti{position:absolute;left:0;top:0;width:1080px;height:1920px;z-index:30;pointer-events:none}
+#errorBox{display:none;position:absolute;left:40px;right:40px;bottom:40px;padding:24px;background:rgba(120,0,0,.93);color:#fff;font-size:18px;z-index:99;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wheelZone">
+    <div id="wheelShell">
+      <canvas id="wheel" width="840" height="840"></canvas>
+      <div id="lights"></div>
+    </div>
+    <div id="pointer"></div>
+    <div id="spinBtn">GIRAR<span class="arrow">↻</span></div>
+  </div>
+  <div id="result">
+    <div id="card">
+      <div id="resultMark"></div>
+      <div id="resultKicker">¡SEGUÍ JUGANDO!</div>
+      <div id="resultTitle">RESULTADO</div>
+      <div id="resultText"></div>
+      <div id="againBtn">JUGAR NUEVAMENTE</div>
+    </div>
+  </div>
+  <canvas id="confetti" width="1080" height="1920"></canvas>
+  <div id="errorBox"></div>
+</div>
+<script>
+(function(){
+'use strict';
+var stage=document.getElementById('stage');
+var canvas=document.getElementById('wheel');
+var ctx=canvas.getContext('2d');
+var spinBtn=document.getElementById('spinBtn');
+var result=document.getElementById('result');
+var resultTitle=document.getElementById('resultTitle');
+var resultText=document.getElementById('resultText');
+var resultKicker=document.getElementById('resultKicker');
+var againBtn=document.getElementById('againBtn');
+var confettiCanvas=document.getElementById('confetti');
+var cctx=confettiCanvas.getContext('2d');
+var err=document.getElementById('errorBox');
+var W=1080,H=1920;
+var spinning=false,rotation=0,lastSeg=-1,resetTimer=0,attractTimer=0;
+var prizes=[
+ {name:'Seguí Participando',type:'lose',color:'#7b39dd',kind:'star'},
+ {name:'¡Ganaste!',type:'win',color:'#ffd521',kind:'trophy'},
+ {name:'Tira de nuevo',type:'lose',color:'#ff6a1a',kind:'retry'},
+ {name:'Ups Sin Suerte',type:'lose',color:'#f42581',kind:'sad'},
+ {name:'Seguí Participando',type:'lose',color:'#7b39dd',kind:'star'},
+ {name:'¡Ganaste!',type:'win',color:'#1297e6',kind:'trophy'},
+ {name:'Tira de nuevo',type:'lose',color:'#61c834',kind:'retry'},
+ {name:'Ups Sin Suerte',type:'lose',color:'#f42581',kind:'sad'}
+];
+var audioCtx=null;
+function resize(){var sw=window.innerWidth||document.documentElement.clientWidth;var sh=window.innerHeight||document.documentElement.clientHeight;var s=Math.min(sw/W,sh/H);stage.style.transform='translate(-50%,-50%) scale('+s+')';}
+window.addEventListener('resize',resize);resize();
+function lights(){var box=document.getElementById('lights');var i,a,r=419,cx=445,cy=445;for(i=0;i<28;i++){a=(-Math.PI/2)+(i*2*Math.PI/28);var d=document.createElement('i');d.className='light';d.style.left=(cx+Math.cos(a)*r-12)+'px';d.style.top=(cy+Math.sin(a)*r-12)+'px';box.appendChild(d);}}
+lights();
+function drawTrophy(x,y,col){ctx.save();ctx.translate(x,y);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=9;ctx.beginPath();ctx.rect(-24,-32,48,39);ctx.fill();ctx.beginPath();ctx.arc(-31,-17,18,-Math.PI/2,Math.PI/2);ctx.stroke();ctx.beginPath();ctx.arc(31,-17,18,Math.PI/2,Math.PI*1.5);ctx.stroke();ctx.fillRect(-8,7,16,24);ctx.fillRect(-29,31,58,10);ctx.restore();}
+function drawStar(x,y,col){ctx.save();ctx.translate(x,y);ctx.fillStyle=col;ctx.beginPath();var i,a,r1=34,r2=15;for(i=0;i<10;i++){a=-Math.PI/2+i*Math.PI/5;var r=i%2===0?r1:r2;var px=Math.cos(a)*r,py=Math.sin(a)*r;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.closePath();ctx.fill();ctx.restore();}
+function drawRetry(x,y,col){ctx.save();ctx.translate(x,y);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=10;ctx.beginPath();ctx.arc(0,0,27,.45,Math.PI*1.85);ctx.stroke();ctx.beginPath();ctx.moveTo(20,-33);ctx.lineTo(43,-29);ctx.lineTo(31,-8);ctx.closePath();ctx.fill();ctx.restore();}
+function drawSad(x,y,col){ctx.save();ctx.translate(x,y);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=7;ctx.beginPath();ctx.arc(0,0,34,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(-12,-8,4,0,Math.PI*2);ctx.arc(12,-8,4,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(0,19,16,Math.PI*1.15,Math.PI*1.85);ctx.stroke();ctx.restore();}
+function labelFor(p){if(p.name==='Seguí Participando')return ['Seguí','Participando'];if(p.name==='Tira de nuevo')return ['Tira de','nuevo'];if(p.name==='Ups Sin Suerte')return ['Ups','Sin Suerte'];return ['¡Ganaste!'];}
+function draw(){var cx=420,cy=420,r=395,seg=Math.PI*2/8,i,start,end,mid,p,lx,ly,dark,col,lines,j;ctx.clearRect(0,0,840,840);ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);for(i=0;i<8;i++){p=prizes[i];start=-Math.PI/2+i*seg;end=start+seg;mid=start+seg/2;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,r,start,end);ctx.closePath();ctx.fillStyle=p.color;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=3;ctx.stroke();lx=Math.cos(mid)*252;ly=Math.sin(mid)*252;dark=p.color==='#ffd521';col=dark?'#1f1f1f':'#ffffff';ctx.save();ctx.translate(lx,ly);if(p.kind==='trophy')drawTrophy(0,-42,col);else if(p.kind==='star')drawStar(0,-42,col);else if(p.kind==='retry')drawRetry(0,-42,col);else drawSad(0,-42,col);ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='900 25px Arial';lines=labelFor(p);for(j=0;j<lines.length;j++){ctx.fillText(lines[j],0,22+(j-(lines.length-1)/2)*29);}ctx.restore();}ctx.restore();ctx.beginPath();ctx.arc(cx,cy,r+1,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=2;ctx.stroke();}
+draw();
+function initAudio(){try{if(!audioCtx){var AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC();}if(audioCtx&&audioCtx.state==='suspended'&&audioCtx.resume)audioCtx.resume();}catch(e){}}
+function tone(freq,dur,vol,type,delay){try{if(!audioCtx)return;var t=audioCtx.currentTime+(delay||0);var o=audioCtx.createOscillator();var g=audioCtx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(vol||.05,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+dur);}catch(e){}}
+function soundClick(){tone(360,.08,.06,'sine',0);}
+function soundTick(){tone(950,.035,.035,'square',0);}
+function soundWin(){tone(523,.22,.08,'sine',0);tone(659,.22,.08,'sine',.12);tone(784,.35,.09,'sine',.24);}
+function soundLose(){tone(360,.18,.06,'sine',0);tone(290,.28,.05,'sine',.13);}
+function pickIndex(){if(Math.random()<0.10){return Math.random()<0.5?1:5;}var non=[0,2,3,4,6,7];return non[Math.floor(Math.random()*non.length)];}
+function ease(t){return 1-Math.pow(1-t,5);}
+function spin(){if(spinning)return;initAudio();soundClick();clearTimeout(resetTimer);spinning=true;spinBtn.className='';var target=pickIndex(),seg=Math.PI*2/8,cur=((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2),targetNorm=((-(target+.5)*seg)%(Math.PI*2)+Math.PI*2)%(Math.PI*2),delta=((targetNorm-cur)%(Math.PI*2)+Math.PI*2)%(Math.PI*2),turns=6+Math.floor(Math.random()*3),start=rotation,end=start+turns*Math.PI*2+delta,dur=5600+Math.floor(Math.random()*800),t0=Date.now();lastSeg=Math.floor(start/seg);function frame(){var t=(Date.now()-t0)/dur;if(t>1)t=1;rotation=start+(end-start)*ease(t);draw();var st=Math.floor(rotation/seg);if(st!==lastSeg){lastSeg=st;soundTick();}if(t<1){window.requestAnimationFrame(frame);}else{rotation=end;draw();spinning=false;showResult(target);}}window.requestAnimationFrame(frame);}
+function showResult(i){var p=prizes[i],win=p.type==='win';result.style.display='block';resultKicker.innerHTML=win?'¡FELICITACIONES!':'¡SEGUÍ JUGANDO!';resultTitle.innerHTML=p.name;resultTitle.style.color=win?'#ff6714':'#008da2';if(win){resultText.innerHTML='¡Felicitaciones! Ganaste un premio.<br>Acercate al staff para canjearlo.';soundWin();confetti();}else if(p.name==='Tira de nuevo'){resultText.innerHTML='¡Tirá de nuevo! Volvé a girar y seguí intentando.';soundLose();}else if(p.name==='Ups Sin Suerte'){resultText.innerHTML='Ups, sin suerte esta vez.<br>¡Intentá nuevamente!';soundLose();}else{resultText.innerHTML='¡Seguí participando!<br>La próxima puede ser la tuya.';soundLose();}resetTimer=setTimeout(reset,9000);}
+function reset(){clearTimeout(resetTimer);result.style.display='none';startAttract();}
+function confetti(){var pieces=[],i;for(i=0;i<95;i++){pieces.push({x:Math.random()*1080,y:-40-Math.random()*400,vx:-2+Math.random()*4,vy:4+Math.random()*8,s:7+Math.random()*12,a:Math.random()*6.28,c:['#00b7c5','#ffd521','#ff6a1a','#f42581','#7b39dd','#61c834'][i%6]});}var start=Date.now();function f(){var dt=Date.now()-start;cctx.clearRect(0,0,1080,1920);for(var k=0;k<pieces.length;k++){var q=pieces[k];q.x+=q.vx;q.y+=q.vy;q.a+=.12;cctx.save();cctx.translate(q.x,q.y);cctx.rotate(q.a);cctx.fillStyle=q.c;cctx.fillRect(-q.s/2,-q.s/2,q.s,q.s*.55);cctx.restore();}if(dt<3200)requestAnimationFrame(f);else cctx.clearRect(0,0,1080,1920);}f();}
+function startAttract(){clearTimeout(attractTimer);attractTimer=setTimeout(function(){if(!spinning&&result.style.display!=='block')spinBtn.className='pulse';},20000);}
+function activity(){spinBtn.className='';startAttract();}
+spinBtn.addEventListener('click',function(){activity();spin();},false);spinBtn.addEventListener('touchend',function(e){e.preventDefault();activity();spin();},false);againBtn.addEventListener('click',function(){initAudio();soundClick();reset();},false);againBtn.addEventListener('touchend',function(e){e.preventDefault();initAudio();soundClick();reset();},false);document.body.addEventListener('touchstart',function(){initAudio();activity();},false);document.body.addEventListener('click',function(){initAudio();activity();},false);startAttract();
+window.onerror=function(msg,src,line,col,ex){err.style.display='block';err.innerHTML='ERROR JS: '+msg+'\nLínea: '+line;return false;};
+})();
+</script>
+</body>
+</html>
