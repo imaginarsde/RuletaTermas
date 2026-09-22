@@ -5,11 +5,11 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId 'ar.com.imaginar.ruletatermas'
+        applicationId 'ar.com.imaginar.ruletatermas.webviewtest'
         minSdk 21
         targetSdk 25
-        versionCode 100
-        versionName 'diag-1.0'
+        versionCode 110
+        versionName 'webview-test-1.0'
     }
 
     buildTypes {
